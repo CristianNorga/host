@@ -1,0 +1,20 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:env": "node dev/generate-env-from-appsettings.cjs",
+    "build": "npm run generate:env && nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@cristiannorga/security": "^1.0.3",
+    "nuxt": "^3.15.4",
+    "siste-personas": "^1.0.9",
+    "vue": "latest",
+    "vue-router": "latest"
+  }
+}
