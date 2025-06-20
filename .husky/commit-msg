@@ -1,0 +1,1 @@
+npx --no -- commitlint --color true --edit $1
