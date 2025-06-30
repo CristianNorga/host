@@ -1,0 +1,170 @@
+name: PR Compliance Validation
+
+on:
+  pull_request:
+    branches: [integración]
+
+jobs:
+  static-tests:
+    name: 🔎 Static Tests (Lint + TypeCheck)
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get commit SHA
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Get tags for commit
+        id: tags
+        run: |
+          TAGS=$(git tag --contains ${{ steps.commit.outputs.sha }})
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Run Lint + TypeCheck
+        if: "!contains(steps.tags.outputs.tags, 'compliance/devops/static-test')"
+        run: |
+          npm run lint
+          npm run type-check
+
+      - name: Tag passed static-test
+        if: "!contains(steps.tags.outputs.tags, 'compliance/devops/static-test')"
+        run: |
+          git tag -s compliance/devops/static-test -m "Static tests passed"
+          git push origin compliance/devops/static-test
+
+
+  unit-tests:
+    name: 🧪 Unit Tests
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Get commit SHA
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Get tags
+        id: tags
+        run: |
+          TAGS=$(git tag --contains ${{ steps.commit.outputs.sha }})
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Run Unit Tests
+        if: "!contains(steps.tags.outputs.tags, 'compliance/devops/unit-test')"
+        run: npm run test
+
+      - name: Tag passed unit-test
+        if: "!contains(steps.tags.outputs.tags, 'compliance/devops/unit-test')"
+        run: |
+          git tag -s compliance/devops/unit-test -m "Unit tests passed"
+          git push origin compliance/devops/unit-test
+
+
+  security-tests:
+    name: 🔐 Security Scan (Trivy)
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget -qO- https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.0_Linux-64bit.deb > trivy.deb
+          sudo dpkg -i trivy.deb
+
+      - name: Get commit SHA
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Get tags
+        id: tags
+        run: |
+          TAGS=$(git tag --contains ${{ steps.commit.outputs.sha }})
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Run Trivy
+        if: "!contains(steps.tags.outputs.tags, 'compliance/devops/security-test')"
+        run: trivy fs .
+
+      - name: Tag passed security-test
+        if: "!contains(steps.tags.outputs.tags, 'compliance/devops/security-test')"
+        run: |
+          git tag -s compliance/devops/security-test -m "Security test passed"
+          git push origin compliance/devops/security-test
+
+  generate-version-and-build-image:
+    name: 📦 Generate Version & Build Image
+    runs-on: self-hosted
+    needs: [static-tests, unit-tests, security-tests]
+
+    env:
+      GHCR_IMAGE: ghcr.io/${{ github.repository }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run standard-version
+        id: release
+        run: |
+          npx standard-version --no-verify
+          VERSION=$(node -p "require('./package.json').version")
+          NAME=$(node -p "require('./package.json').name")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+
+      - name: Push version tag
+        run: |
+          git push --follow-tags origin HEAD
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=docker/node/${{ steps.release.outputs.name }}:${{ steps.release.outputs.version }}
+          docker build -t ${{ env.GHCR_IMAGE }}:$IMAGE_TAG .
+          docker push ${{ env.GHCR_IMAGE }}:$IMAGE_TAG
+
+      - name: Create tag for image name
+        run: |
+          git tag -s docker/build-${{ env.GHCR_IMAGE }}:${{ steps.release.outputs.version }} -m "Built image version"
+          git push origin docker/build-${{ env.GHCR_IMAGE }}:${{ steps.release.outputs.version }}
