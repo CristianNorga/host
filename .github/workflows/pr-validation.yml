@@ -5,6 +5,7 @@ on:
     branches: [integración]
 
 jobs:
+
   static-tests:
     name: 🔎 Static Tests (Lint + TypeCheck)
     runs-on: self-hosted
@@ -45,7 +46,6 @@ jobs:
           git tag -s compliance/devops/static-test -m "Static tests passed"
           git push origin compliance/devops/static-test
 
-
   unit-tests:
     name: 🧪 Unit Tests
     runs-on: self-hosted
@@ -81,7 +81,6 @@ jobs:
         run: |
           git tag -s compliance/devops/unit-test -m "Unit tests passed"
           git push origin compliance/devops/unit-test
-
 
   security-tests:
     name: 🔐 Security Scan (Trivy)
