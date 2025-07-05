@@ -11,16 +11,17 @@ jobs:
     runs-on: self-hosted
 
     steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Create .npmrc
         uses: v-venes/create-npmrc@v1.0.0
         with:
           org_name: cristiannorga
           auth_token: ${{ GITHUB_TOKEN }}
           always_auth: true
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -62,6 +63,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Create .npmrc
+        uses: v-venes/create-npmrc@v1.0.0
+        with:
+          org_name: cristiannorga
+          auth_token: ${{ GITHUB_TOKEN }}
+          always_auth: true
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -97,6 +105,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Create .npmrc
+        uses: v-venes/create-npmrc@v1.0.0
+        with:
+          org_name: cristiannorga
+          auth_token: ${{ GITHUB_TOKEN }}
+          always_auth: true
 
       - name: Install Trivy
         run: |
@@ -138,6 +153,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Create .npmrc
+        uses: v-venes/create-npmrc@v1.0.0
+        with:
+          org_name: cristiannorga
+          auth_token: ${{ GITHUB_TOKEN }}
+          always_auth: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
