@@ -11,6 +11,13 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Create .npmrc
+        uses: v-venes/create-npmrc@v1.0.0
+        with:
+          org_name: cristiannorga
+          auth_token: ${{ GITHUB_TOKEN }}
+          always_auth: true
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
