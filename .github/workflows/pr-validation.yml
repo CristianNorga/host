@@ -2,7 +2,7 @@ name: PR Compliance Validation
 
 on:
   pull_request:
-    branches: [integración]
+    branches: [integracion]
 
 jobs:
 
