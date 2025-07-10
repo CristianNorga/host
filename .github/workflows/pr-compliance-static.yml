@@ -1,0 +1,55 @@
+name: PR Compliance Validation
+  
+on:
+  pull_request:
+    branches: [integracion]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para traer tags
+
+      - name: Verificar si ya existe la etiqueta compliance/static
+        run: |
+          TAG=$(git tag --contains HEAD | grep '^compliance/static' || true)
+          if [ ! -z "$TAG" ]; then
+            echo "Ya existe la etiqueta $TAG, se omite análisis estático."
+            exit 0
+          fi
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Instalar Lint Globalmente
+        run: npm install -g eslint
+
+      - name: Ejecutar análisis estático
+        run: eslint --ext .js,.ts,.vue --ignore-pattern .
+  
+  tag-after-analysis:
+    needs: static-analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ success() }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para poder etiquetar y subir
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Crear y subir etiqueta
+        env:
+          TAG_NAME: compliance/static # se podria anexar la version v1.2.3, fecha $(date +'%Y%m%d%H%M%S'), etc.
+        run: |
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
