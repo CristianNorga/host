@@ -25,11 +25,11 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Instalar Lint Globalmente
-        run: npm install -g eslint
+      - name: Instalar dependencias de desarrollo
+        run: npm ci --only=dev
 
       - name: Ejecutar análisis estático
-        run: eslint --ext .js,.ts,.vue --ignore-pattern .
+        run: npm run lint
   
   tag-after-analysis:
     needs: static-analysis
@@ -41,6 +41,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Necesario para poder etiquetar y subir
+          fetch-tags: true
 
       - name: Configurar Git
         run: |
