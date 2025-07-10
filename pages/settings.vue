@@ -1,4 +1,7 @@
 <script setup>
+defineOptions({
+  name: 'PageSettings'
+})
 const tokenGlobal = useCookie('token')
 
 const token = ref('');

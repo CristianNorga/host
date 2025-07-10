@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Ruta del archivo appsettings.json
 const inputPath = path.resolve(__dirname, '../src/libs/config/settings/appsettings.json');
