@@ -35,12 +35,12 @@ jobs:
           restore-keys: |
             npm-
 
-      - name: Create .npmrc
-        uses: v-venes/create-npmrc@v1.0.0
-        with:
-          org_name: cristiannorga
-          auth_token: ${{ secrets.GITHUB_TOKEN }}
-          always_auth: true
+      - name: Configurar .npmrc para paquetes privados
+        run: |
+          echo "shamefully-hoist=true" > .npmrc
+          echo "strict-peer-dependencies=false" >> .npmrc
+          echo "@cristiannorga:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Instalar dependencias
         run: npm ci
