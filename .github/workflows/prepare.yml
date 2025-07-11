@@ -61,4 +61,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Llamar a validación de compliance
-        uses: ./.github/workflows/compliance/root-compliance.yml
+        uses: ./.github/workflows/root-compliance.yml

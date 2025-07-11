@@ -5,4 +5,4 @@ on:
 
 jobs:
   static-compliance:
-    uses: ./.github/workflows/compliance/static.yml
+    uses: ./.github/workflows/static.yml
