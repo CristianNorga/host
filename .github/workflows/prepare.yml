@@ -41,6 +41,11 @@ jobs:
           echo "@cristiannorga:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
 
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
       - name: Instalar dependencias
         run: npm ci
         env:
@@ -59,4 +64,6 @@ jobs:
     name: Compliance Check
     if: ${{ github.event_name == 'pull_request' }}
     needs: setup
+    permissions:
+      contents: write
     uses: ./.github/workflows/root-compliance.yml
