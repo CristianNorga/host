@@ -1,0 +1,62 @@
+name: Setup and Install
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - integracion
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determinar evento que activó
+        id: event
+        run: |
+          echo "Evento: ${{ github.event_name }}"
+
+      # echo "${{ github.event_name }}" > trigger_context.txt
+
+      - name: Cache dependencias
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      - name: Create .npmrc
+        uses: v-venes/create-npmrc@v1.0.0
+        with:
+          org_name: cristiannorga
+          auth_token: ${{ secrets.GITHUB_TOKEN }}
+          always_auth: true
+
+      - name: Instalar dependencias
+        run: npm ci
+        env:
+            NODE_ENV: ${{ env.ENVIRONMENT || 'development' }}
+
+      # - name: Etiquetar commit con contexto del workflow
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      #     CONTEXT_TAG="ci/context/${{ github.event_name }}"
+      #     git tag -f "$CONTEXT_TAG"
+      #     git push origin "$CONTEXT_TAG" --force
+  
+  compliance:
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar a validación de compliance
+        uses: ./.github/workflows/compliance/root-compliance.yml

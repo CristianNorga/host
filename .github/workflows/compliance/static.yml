@@ -1,8 +1,7 @@
-name: PR Compliance Validation
+name: Static Compliance
   
 on:
-  pull_request:
-    branches: [integracion]
+  workflow_call:
 
 jobs:
   static-analysis:
@@ -11,6 +10,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Necesario para traer tags
+      
+      - name: Cache dependencias
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-
 
       - name: Verificar si ya existe la etiqueta compliance/static
         run: |
