@@ -22,8 +22,7 @@ jobs:
         id: event
         run: |
           echo "Evento: ${{ github.event_name }}"
-
-      # echo "${{ github.event_name }}" > trigger_context.txt
+          echo "Organización: ${{ github.repository_owner }}"
 
       - name: Cache dependencias
         uses: actions/cache@v4
@@ -40,7 +39,7 @@ jobs:
           echo "shamefully-hoist=true" > .npmrc
           echo "strict-peer-dependencies=false" >> .npmrc
           echo "@cristiannorga:registry=https://npm.pkg.github.com" >> .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
 
       - name: Instalar dependencias
         run: npm ci
