@@ -11,7 +11,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "release": "standard-version",
-    "lint": "eslint . --ignore-path .gitignore"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@cristiannorga/security": "^1.0.3",
