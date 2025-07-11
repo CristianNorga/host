@@ -56,9 +56,7 @@ jobs:
       #     git push origin "$CONTEXT_TAG" --force
   
   compliance:
+    name: Compliance Check
     if: ${{ github.event_name == 'pull_request' }}
     needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Llamar a validación de compliance
-        uses: ./.github/workflows/root-compliance.yml
+    uses: ./.github/workflows/root-compliance.yml

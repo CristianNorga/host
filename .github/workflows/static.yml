@@ -58,8 +58,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Crear y subir etiqueta
-        env:
-          TAG_NAME: compliance/static # se podria anexar la version v1.2.3, fecha $(date +'%Y%m%d%H%M%S'), etc.
-        run: |
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+        uses: ./.github/actions/tag-commit
+        with:
+          tag-name: 'compliance/static'
