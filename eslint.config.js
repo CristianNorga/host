@@ -6,9 +6,21 @@ import { defineConfig } from "eslint/config";
 
 
 export default defineConfig([
-  { files: ["**/*.{js,mjs,cjs,ts,mts,cts,vue}"], languageOptions: { globals: {...globals.browser, ...globals.node} } },
-  tseslint.configs.recommended,
-  pluginVue.configs["flat/essential"],
-  { files: ["**/*.vue"], languageOptions: { parserOptions: { parser: tseslint.parser } } },
-  { files: ["**/*.css"], plugins: { css }, language: "css/css" },
+	{
+		ignores: [
+			'**/node_modules/**',
+      '**/.*',
+		],
+	},
+	{
+		files: ['**/*.{js,mjs,cjs,ts,mts,cts,vue}'],
+		languageOptions: { globals: { ...globals.browser, ...globals.node } },
+	},
+	tseslint.configs.recommended,
+	pluginVue.configs['flat/essential'],
+	{
+		files: ['**/*.vue'],
+		languageOptions: { parserOptions: { parser: tseslint.parser } },
+	},
+	{ files: ['**/*.css'], plugins: { css }, language: 'css/css' },
 ]);

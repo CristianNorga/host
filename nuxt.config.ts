@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 		experimental: {
 			tasks: true,
 		},
-		dev: true,
+		// dev: true,
 		openAPI: {
 			meta: {
 				title: 'My PCO Nuxt API',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const tokenGlobal = useCookie('token')
+// const tokenGlobal = useCookie('token')
 
 const router = useRouter()
 const pages = router.getRoutes()
