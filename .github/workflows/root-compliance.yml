@@ -1,0 +1,8 @@
+name: Compliance Validation
+
+on:
+  workflow_call:
+
+jobs:
+  static-compliance:
+    uses: ./.github/workflows/static.yml

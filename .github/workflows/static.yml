@@ -1,0 +1,55 @@
+name: Static Compliance
+  
+on:
+  workflow_call:
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para traer tags
+
+      - name: Verificar si ya existe la etiqueta compliance/static
+        run: |
+          TAG=$(git tag --contains HEAD | grep '^compliance/static' || true)
+          if [ ! -z "$TAG" ]; then
+            echo "Ya existe la etiqueta $TAG, se omite análisis estático."
+            exit 0
+          fi
+      
+      - name: Cache dependencias
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      - name: Ejecutar análisis estático
+        run: npm run lint
+  
+  tag-after-analysis:
+    needs: static-analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ success() }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para poder etiquetar y subir
+          fetch-tags: true
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Crear y subir etiqueta
+        uses: ./.github/actions/tag-commit
+        with:
+          tag-name: 'compliance/static'

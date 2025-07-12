@@ -1,0 +1,69 @@
+name: Setup and Install
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - integracion
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determinar evento que activó
+        id: event
+        run: |
+          echo "Evento: ${{ github.event_name }}"
+          echo "Organización: ${{ github.repository_owner }}"
+
+      - name: Cache dependencias
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      - name: Configurar .npmrc para paquetes privados
+        run: |
+          echo "shamefully-hoist=true" > .npmrc
+          echo "strict-peer-dependencies=false" >> .npmrc
+          echo "@cristiannorga:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Instalar dependencias
+        run: npm ci
+        env:
+            NODE_ENV: ${{ env.ENVIRONMENT || 'development' }}
+
+      # - name: Etiquetar commit con contexto del workflow
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      #     CONTEXT_TAG="ci/context/${{ github.event_name }}"
+      #     git tag -f "$CONTEXT_TAG"
+      #     git push origin "$CONTEXT_TAG" --force
+  
+  compliance:
+    name: Compliance Check
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: setup
+    permissions:
+      contents: write
+    uses: ./.github/workflows/root-compliance.yml

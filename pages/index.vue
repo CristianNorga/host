@@ -1,4 +1,7 @@
 <script setup lang="ts">
+defineOptions({
+  name: 'HomePageIndex'
+})
 
 const tokenGlobal = useCookie('token')
 const enviromentpublictest = useRuntimeConfig().public

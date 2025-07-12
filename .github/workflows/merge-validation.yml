@@ -1,0 +1,60 @@
+name: Move Tags on Merge to Develop Or Main Branch
+
+on:
+  push:
+    branches:
+      - integracion
+      - main
+
+jobs:
+  move-tags:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout completo con historial y tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Obtener primer padre (rama origen del merge)
+        id: base
+        run: |
+          BASE_COMMIT=$(git log -1 --pretty=%P HEAD | awk '{print $1}')
+          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+
+      - name: Verificar si el commit base pertenece a main
+        id: check-main
+        run: |
+          git fetch origin main
+          # Verifica si el commit base está en la historia de main
+          if git merge-base --is-ancestor "$BASE_COMMIT" origin/main; then
+            echo "is_main=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_main=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Listar tags del commit base
+        id: list-tags
+        if: steps.check-main.outputs.is_main == 'false'
+        run: |
+          TAGS=$(git tag --contains "$BASE_COMMIT" | grep '^compliance/' || true)
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "Tags encontrados:"
+          echo "$TAGS"
+
+      - name: Reasignar tags al commit HEAD
+        if: steps.check-main.outputs.is_main == 'false' && steps.list-tags.outputs.tags != ''
+        run: |
+          for tag in ${{ steps.list-tags.outputs.tags }}; do
+            echo "Moviendo tag $tag a HEAD"
+            git tag -f "$tag" HEAD
+          done
+          git push origin --tags --force
