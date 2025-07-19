@@ -1,4 +1,4 @@
-name: Static Compliance
+name: 🔎 Static Tests
   
 on:
   workflow_call:

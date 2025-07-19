@@ -1,0 +1,22 @@
+name: 'Tag CRUD Action'
+description: 'Crea un tag Git en el commit actual'
+author: 'cristiannorga'
+inputs:
+  tag-name:
+    description: 'Nombre del tag'
+    required: true
+    default: 'ci/manual-tag'
+  operation:
+    description: 'Operación a realizar'
+    required: true
+    default: 'create'  # Puede ser 'create' | 'read' | 'actualizar' | 'eliminar'
+  branch:
+    description: 'Nombre de la rama donde se creará el tag'
+    required: false
+    default: ''
+runs:
+  using: 'node20'
+  main: 'compiled/index.js'  # El archivo JS que será ejecutado
+branding:
+  icon: 'tag'
+  color: 'purple'
